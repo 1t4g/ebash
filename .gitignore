@@ -1,0 +1,8 @@
+*.deb
+*.build
+*.changes
+*.log
+*.swp
+.debhelper/
+build/
+dist/

@@ -22,7 +22,7 @@ jobs:
           mkdir -p build/ebash_${VERSION}/DEBIAN
           mkdir -p build/ebash_${VERSION}/usr/bin
 
-          cp ebash.sh build/ebash_${VERSION}/usr/bin/ebash
+          cp bin/ebash.sh build/ebash_${VERSION}/usr/bin/ebash
           chmod 755 build/ebash_${VERSION}/usr/bin/ebash
 
           cat <<EOF > build/ebash_${VERSION}/DEBIAN/control

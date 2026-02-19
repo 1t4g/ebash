@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -14,8 +18,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set version from tag
-        id: vars
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: shellcheck bin/ebash.sh
 
       - name: Prepare package structure
         run: |
@@ -38,8 +49,7 @@ jobs:
           EOF
 
       - name: Build deb package
-        run: |
-          dpkg-deb --build build/ebash_${VERSION}
+        run: dpkg-deb --build build/ebash_${VERSION}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -50,6 +60,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ env.VERSION }}
+          name: ebash v${{ env.VERSION }}
           files: build/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

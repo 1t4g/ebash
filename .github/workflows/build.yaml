@@ -1,0 +1,55 @@
+name: Build Debian Package
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version from tag
+        id: vars
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Prepare package structure
+        run: |
+          mkdir -p build/ebash_${VERSION}/DEBIAN
+          mkdir -p build/ebash_${VERSION}/usr/bin
+
+          cp ebash build/ebash_${VERSION}/usr/bin/ebash
+          chmod 755 build/ebash_${VERSION}/usr/bin/ebash
+
+          cat <<EOF > build/ebash_${VERSION}/DEBIAN/control
+          Package: ebash
+          Version: ${VERSION}
+          Section: utils
+          Priority: optional
+          Architecture: all
+          Maintainer: Leonid <your@email>
+          Depends: nmap
+          Description: Simple network scanning wrapper for nmap
+           Wrapper script for running separated nmap scans.
+          EOF
+
+      - name: Build deb package
+        run: |
+          dpkg-deb --build build/ebash_${VERSION}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ebash-deb
+          path: build/*.deb
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
